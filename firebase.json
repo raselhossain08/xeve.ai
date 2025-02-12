@@ -1,0 +1,52 @@
+{
+  "hosting": [
+    {
+      "target": "nonprod",
+      "public": "build_static",
+      "ignore": [
+        "**/.*"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "Permissions-Policy",
+              "value": "microphone=(self)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "prod",
+      "public": "build_static",
+      "ignore": [
+        "**/.*"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "Permissions-Policy",
+              "value": "microphone=(self)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /embedding
+
+Sitemap: https://xeve.ai/sitemap.xml

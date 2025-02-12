@@ -1,0 +1,87 @@
+body {
+    --markup-color: rgb(120, 0, 220);
+    --markup-color-high-contrast: rgb(96, 0, 164);
+    --markup-color-brighter: rgba(137, 0, 235, 0.8);;
+    --markup-color-bright: rgb(212, 161, 251);
+    --markup-color-transparent: rgba(92, 0, 157, 0.648);
+    --markup-color2: rgb(96, 164, 0);
+    --markup-color2-dark: rgb(0, 124, 0);
+    --markup-color2-bright: rgb(177, 255, 177);
+    --markup-color2-transparent: rgba(92, 157, 0, 0.648);
+    --standard-border-radius: 8px;
+    --logo-markup: rgb(149, 0, 255);
+}
+
+body.dark-mode {
+    --markup-color-high-contrast: #ba5aff;
+}
+
+i {
+    margin: 2px;
+}
+
+.row{
+    display: flex;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    flex-direction: row;
+    justify-content: center;}
+
+.roundButton {
+    margin: 0 5px;
+    min-height: 27px;
+    font-size: 13px;
+    background-color: var(--markup-color);
+    border: none;
+    border-radius: 99px;
+    color: white;
+    padding: 2px 15px;
+    cursor: pointer;
+}
+
+.logo {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    font-size: 40px;
+}
+
+.logo_normal {
+    color: var(--text-color);
+}
+
+.logo_smaller{
+    font-size: max(calc(100% - 24px), 12px);
+}
+.logo_a_bit_smaller{
+    font-size: max(calc(100% - 12px), 14px);
+}
+
+.logo_markup {
+    color: var(--logo-markup);
+}
+
+
+@media (max-width: 500px) {
+    .logo {
+        font-size: 32px;
+        margin-left: 3px;
+    }
+    
+    .logo_smaller{
+        font-size: 14px;
+    }
+    
+    
+    .logo_bigger {
+        font-size: 35px;
+    }
+}
+
+.cover {
+    border-radius: 3px;
+    /* should NOT be the standard border radius because then the edges look strange */
+}

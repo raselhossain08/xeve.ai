@@ -1,0 +1,113 @@
+/* Font Awesome Solid Icons */
+@font-face {
+    font-family: 'FontAwesomeSolid';
+    src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff2') format('woff2'),
+         url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-solid-900.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+}
+
+.fas, .fa-solid {
+    font-family: 'FontAwesomeSolid';
+    font-weight: 900;
+    font-style: normal;
+}
+
+/* Font Awesome Regular Icons */
+@font-face {
+    font-family: 'FontAwesomeRegular';
+    src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-regular-400.woff2') format('woff2'),
+         url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-regular-400.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+.fa-regular {
+    font-family: 'FontAwesomeRegular';
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Font Awesome Brands Icons */
+@font-face {
+    font-family: 'FontAwesomeBrands';
+    src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-brands-400.woff2') format('woff2'),
+         url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/webfonts/fa-brands-400.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+.fa-brands {
+    font-family: 'FontAwesomeBrands';
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Icon content definitions */
+.fa-bars:before {
+    content: "\f0c9";
+}
+
+.fa-arrow-right:before {
+    content: "\f061";
+}
+
+.fa-home:before {
+    content: "\f015";
+}
+
+.fa-robot:before {
+    content: "\f544";
+}
+
+.fa-user:before {
+    content: "\f007";
+}
+
+.fa-user-astronaut:before {
+    content: "\f4fb";
+}
+
+.fa-bolt:before {
+    content: "\f0e7";
+}
+
+.fa-smile:before {
+    content: "\f118";
+}
+
+.fa-thumbs-up:before {
+    content: "\f164";
+}
+
+.fa-gear:before {
+    content: "\f013";
+}
+
+.fa-play:before {
+    content: "\f04b";
+}
+
+.fa-magnifying-glass:before {
+    content: "\f002";
+}
+
+.fa-lightbulb:before {
+    content: "\f0eb";
+}
+
+.fa-cc-visa:before {
+    content: "\f1f0";
+}
+
+.fa-cc-mastercard:before {
+    content: "\f1f1";
+}
+
+.fa-money-check:before {
+    content: "\f53d";
+}
+
+.fa-comment:before {
+    content: "\f075"; /* Regular comment icon */
+}

@@ -1,0 +1,17 @@
+{
+  "name": "personaiwebapp",
+  "version": "1.0.0",
+  "main": "dictatewithmic.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@sentry/browser": "^7.114.0",
+    "firebase": "^10.11.1",
+    "vue-virtual-scroller": "^1.1.2"
+  }
+}

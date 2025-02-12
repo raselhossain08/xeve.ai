@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "default": "personai-86161"
+  },
+  "targets": {
+    "personai-86161": {
+      "hosting": {
+        "production": [
+          "your-production-site-id",
+          "your-production-site-idpersonai-86161"
+        ],
+        "prod": [
+          "personai-86161"
+        ],
+        "nonprod": [
+          "nonprodpersonai"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}

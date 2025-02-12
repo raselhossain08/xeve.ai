@@ -1,0 +1,3055 @@
+body {
+  /*need to be defined here to switch in case of dark mode*/
+  --background-color: #fffeff;
+  --background-color-light: #fffeff76;
+  --text-color: #111;
+  --text-color-light: #111111cc;
+  --overlay-color: #00000012;
+  --video-ratio: 1.777777;
+  /* if I should move this somewhere else I also have to adjust the setvideoratio() script */
+  --one-through-video-ratio: 0.5625;
+  --fa-display: block;
+  margin: unset;
+  padding: 0;
+  font-family: 'Arial';
+  font-size: 14px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  /* needed so that Ubuntu bold looks good on safari*/
+}
+
+body.dark-mode {
+  --background-color: #252525;
+  --background-color-light: #18181876;
+  --overlay-color: #ffffff1f;
+  --text-color: #ddd;
+  --text-color-light: #ddddddcc;
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('@/assets/fonts/Ubuntu-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('@/assets/fonts/Roboto-Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('@/assets/fonts/Roboto-Thin.ttf') format('truetype');
+  font-weight: light;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('@/assets/fonts/Roboto-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('@/assets/fonts/Roboto-ThinItalic.ttf') format('truetype');
+  font-weight: light;
+  font-style: italic;
+}
+
+h2 {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+@media (max-width: 760px) {
+  h2 {
+    font-size: 18px;
+  }
+}
+
+body.fullscreen {
+  background-color: #111;
+}
+
+.popupbody {
+  background-color: #333333;
+  color: #ddd;
+  text-align: center;
+  padding: 0;
+  /* ! Important for Smartphones */
+  margin: 0;
+  /* ! Important for Smartphones */
+  height: unset;
+  overflow: unset;
+  overflow-x: hidden;
+  justify-content: unset;
+}
+
+#videoContainer {
+  position: relative;
+  overflow: hidden;
+  width: min(77vw, calc(75vh * var(--video-ratio)));
+  height: min(calc(77vw * var(--one-through-video-ratio)), 75vh);
+  box-sizing: border-box;
+  margin: 1vw 1vw 0 1vw;
+  margin-top: 0.5vw;
+}
+
+@media (max-width: 760px) {
+  #videoContainer {
+    width: min(96vw, calc(85vh * var(--video-ratio)));
+    /*use 96 and not 100 so that there is space for the scrollbar. Otherwise the vertical scrollbar is also shown*/
+    height: min(calc(96vw * var(--one-through-video-ratio)), 85vh);
+    /*use 96 and not 100 so that there is space for the scrollbar. Otherwise the vertical scrollbar is also shown*/
+    margin: 0 auto;
+  }
+}
+
+#videoContainer.fullscreen {
+  /* do NOT use 100vw here because then scrollbar is shown */
+  width: min(98vw, calc(98vh * var(--video-ratio)));
+  height: min(calc(98vw * var(--one-through-video-ratio)), 98vh);
+  top: max(0px, calc((98vh - 98vw * var(--one-through-video-ratio)) / 2));
+  z-index: 310;
+  margin: auto;
+}
+
+#videoPlayer1,
+#videoPlayer2,
+#videoPlayer3,
+#transitionPlayer1,
+#transitionPlayer2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  object-fit: cover;
+  /* must be 0.01 to load also in the background */
+  z-index: 10;
+  border-radius: var(--standard-border-radius);
+  opacity: 0.99;
+  /*if this would be 1 then the browser (esp. iPhone) would not prepare the other players*/
+}
+
+#videoPlayer1.active,
+#videoPlayer2.active,
+#videoPlayer3.active,
+#transitionPlayer1.active,
+#transitionPlayer2.active {
+  z-index: 12;
+  /*needed otherwise transition looks different from player 1 to 2 compared to 2 to 1*/
+}
+
+.transition-speed-slow {
+  transition: opacity 0.4s;
+}
+
+#videoPlayer1.goingtoinactive,
+#videoPlayer2.goingtoinactive,
+#videoPlayer3.goingtoinactive,
+#transitionPlayer1.goingtoinactive #transitionPlayer2.goingtoinactive {
+  z-index: 11;
+  /*needed otherwise transition looks different from player 1 to 2 compared to 2 to 1*/
+}
+
+#videoPlayer1.goingtoactive,
+#videoPlayer2.goingtoactive,
+#videoPlayer3.goingtoactive,
+#transitionPlayer1.goingtoactive #transitionPlayer2.goingtoactive {
+  z-index: 12;
+  /*needed otherwise transition looks different from player 1 to 2 compared to 2 to 1*/
+}
+
+.videoBackground {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  /* both must be set because the transitions are not exactly the same size ratio like the video because of the lower resolution */
+  z-index: 1;
+  border-radius: var(--standard-border-radius);
+}
+
+.videoBackground.active {
+  z-index: 13;
+}
+
+#pauseLayer {
+  opacity: 0;
+  z-index: 13;
+  /*set to full screen width and height*/
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+#steeringElements {
+  z-index: 15;
+  height: 80px;
+  display: flex;
+  justify-content: flex-start;
+  position: absolute;
+  align-items: end;
+  bottom: 0px;
+  width: 100%;
+  background-image: linear-gradient(to top, #00000054 0%, transparent 100%);
+  border-radius: var(--standard-border-radius);
+}
+
+.badge {
+  pointer-events: none;
+  width: 100%;
+  -webkit-filter: drop-shadow(0px 0px 5px #333);
+  filter: drop-shadow(0px 0px 5px #333);
+}
+
+.badgeDiv {
+  position: absolute;
+  top: 15px;
+  right: 7px;
+  z-index: 17;
+  width: calc(9vw + 20px);
+  max-width: 130px;
+  min-width: 58px;
+  height: auto;
+  /* transition: right 0.3s ease;*/
+}
+
+@media (max-width: 760px) {
+  .badgeDiv {
+    top: 5px;
+    right: 0px;
+  }
+}
+
+.purchaseButtonOverVideoDiv {
+  position: absolute;
+  top: 1vw;
+  left: 1vw;
+  /*using max(...) here would be better but does not work in safari on iPhone*/
+  z-index: 13;
+  width: 110px;
+  text-align: center;
+  transition: opacity 0.5s;
+}
+
+#purchaseButtonOverVideo {
+  box-shadow: 2px 2px 2px #00000033;
+  width: 100%;
+  margin: unset;
+  color: white;
+  background-color: var(--markup-color-transparent);
+  border: 1px solid white;
+  cursor: pointer;
+  min-height: 27px;
+  font-size: 12px;
+  border-radius: 99px;
+  padding: 2px 5px;
+}
+
+.purchaseButtonOverVideoArrow {
+  margin: 2px 0 0 0;
+  font-size: 18px;
+  font-weight: lighter;
+  color: white;
+  text-shadow: -2px -2px 2px #00000025, 2px -2px 2px #00000025,
+    -2px 2px 2px #00000025, 2px 2px 2px #00000025;
+}
+
+#loginAndRegisterRadio {
+  margin: auto;
+  width: 250px;
+}
+
+#purchaseButtonOverVideoArrow.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+
+#purchaseButtonOverVideoDivText {
+  margin: 0 auto;
+  font-size: 13px;
+  color: white;
+  text-shadow: -2px -2px 2px #00000015, 2px -2px 2px #00000015,
+    -2px 2px 2px #00000015, 2px 2px 2px #00000015;
+}
+
+@media (max-width: 580px) {
+  #purchaseButtonOverVideo {
+    min-height: 22px;
+    font-size: 10px;
+  }
+
+  .purchaseButtonOverVideoDiv {
+    width: 95px;
+  }
+
+  #purchaseButtonOverVideoDivText {
+    font-size: 11px;
+  }
+}
+
+#purchaseButtonOverVideo.bouncing {
+  animation: bounce 2s;
+}
+
+#purchaseButtonOverVideoDivText.bouncing {
+  animation: bounce 2s;
+}
+
+/* OLD ( Now, I use a timeout in the script instead of): transition: opacity 1s ease-in; must be a high value so that this play is still bright in background. Otherwise black-effect. But if too high, then when the next jump comes there's a problem because then this nextjump will not fade. ease-in makes the effect less at the beginning. so this helps that I don't need too much time
+#videoPlayer1:not(.active), #videoPlayer2:not(.active), #transitionPlayer:not(active) {
+    opacity: 0;
+} 
+*/
+
+#intensityBox {
+  position: fixed;
+  bottom: calc(50% - 110px);
+  right: 20px;
+  height: 200px;
+  width: 10px;
+  max-width: 30vw;
+  z-index: 13;
+}
+
+#secondBox {
+  width: min(77vw, calc(75vh * var(--video-ratio)));
+  margin: 0 10px;
+}
+
+@media (max-width: 760px) {
+  #secondBox {
+    width: 96vw;
+    margin: 0 auto;
+  }
+}
+
+#secondBox.fullscreen {
+  display: none;
+  width: unset;
+}
+
+#SecondBoxAroundIntensityBar {
+  border-radius: 10px;
+  height: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  align-content: flex-end;
+}
+
+#BoxAroundIntensityBar {
+  align-content: flex-end;
+  overflow: hidden;
+  height: 5px;
+  border-radius: 10px;
+}
+
+#intensityBar {
+  height: 150px;
+  background: linear-gradient(
+    to top,
+    rgba(255, 0, 0, 0.7),
+    rgba(0, 128, 0, 0.7)
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  /* Align the items at the bottom */
+}
+
+/*
+#bar {
+    width: 100%;
+    background-color: rgb(181, 181, 181);
+    border-radius: 10px;
+    height: 100%;
+    transition: height 0.5s ease;
+}*/
+
+#intensityText {
+  display: flex;
+  text-align: center;
+  color: rgb(215, 215, 215);
+  font-size: 9px;
+  margin-top: 4px;
+  transform: translate(-10px);
+}
+
+.bigPlayButton {
+  position: absolute;
+  top: calc(50% - 70px);
+  left: 50%;
+  transform: translateX(-50%);
+  /*transform: translateX(-50%); DO NOT use translate because then when I add the loading animation this will not work and therefore be in another position*/
+  padding: min(16px, 3vw);
+  color: var(--text-color);
+  background-color: transparent;
+  border: none;
+  border-radius: 35px;
+  cursor: pointer;
+  font-size: 28px;
+  transition: background-color 0.3s ease;
+  z-index: 101;
+  line-height: 1;
+  transition: 700ms;
+}
+
+.bigPlayButton.hidden {
+  opacity: 0;
+  transition: 500ms;
+}
+
+.bigPlayButton.initially_hidden {
+  display: none;
+  opacity: 0;
+  transition: 500ms;
+}
+
+.bigPlayButton.gone {
+  display: none;
+}
+
+.bigPlayButton:hover {
+  background-color: #555;
+}
+
+@media (max-width: 580px) {
+  .bigPlayButton {
+    top: calc(50% - 60px);
+  }
+}
+
+.bigPlayButtonImage {
+  height: 27px;
+  opacity: 95%;
+  padding-top: 3px;
+  padding-left: 5px;
+}
+
+.playText {
+  position: absolute;
+  font-size: 18px;
+  top: calc(50% - 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Roboto';
+  background: none;
+  border: none;
+  color: var(--text-color);
+  z-index: 101;
+  transition: 500ms;
+  text-align: center;
+  line-height: 30px;
+}
+
+.playTextSubtitle {
+  font-size: 30px;
+}
+
+@media (max-width: 580px) {
+  .playText {
+    font-size: 16px;
+    line-height: 25px;
+    top: calc(50% - 5px);
+  }
+
+  .playTextSubtitle {
+    font-size: 22px;
+  }
+}
+
+.playText.initialPosition {
+  top: calc(50% - 40px);
+  transition: 1.5s;
+}
+
+.playText.hidden {
+  opacity: 0;
+  transition: 500ms;
+}
+
+.playText.gone {
+  display: none;
+}
+
+#menuBar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 60px;
+  padding-left: 8px;
+  box-sizing: border-box;
+}
+
+#menuButton {
+  font-size: 20px;
+  padding: 5px;
+}
+
+#menuButtonDiv {
+  margin: 0 2px 0 5px;
+}
+
+.headerRightDiv {
+  display: inherit;
+  align-items: inherit;
+  position: relative;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-size: 12px;
+  padding: 0px;
+  text-align: right;
+}
+
+.control-btn {
+  position: relative;
+  /* Position the button over the video */
+  bottom: 2px;
+  /* Margin from the bottom */
+  padding: 7px;
+  border: none;
+  border-radius: 35%;
+  /* Make it rounded corners */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 21px;
+  z-index: 20;
+  /* Keep it on top */
+  width: 42px;
+  height: 42px;
+  display: none;
+  /* Initially hidden. Will show after video starts */
+  background-color: rgba(255, 255, 255, 0);
+  /* transparent */
+  color: rgba(211, 211, 211, 0.5);
+}
+
+.left {
+  left: 10px;
+  /* Margin from the left */
+}
+
+.second-from-left {
+  left: 52px;
+  /* Margin from the left */
+}
+
+.third-from-left {
+  left: 98px;
+  /* Margin from the left */
+}
+
+@media (max-width: 580px) {
+  .second-from-left {
+    left: 10px;
+    /* Margin from the left */
+    bottom: 52px;
+    /* Margin from the left */
+  }
+
+  .third-from-left {
+    left: 10px;
+    /* Margin from the left */
+    bottom: 97px;
+    /* Margin from the left */
+  }
+}
+
+.right {
+  right: 10px;
+}
+
+.disabled {
+  background-color: rgba(233, 0, 0, 0.3);
+  /* Initial transparency */
+}
+
+.control-btn.disabled:hover {
+  background-color: rgba(144, 0, 0, 0.3);
+}
+
+.control-btn:hover {
+  background-color: rgba(200, 200, 200, 0.3);
+}
+
+@media (hover: none) {
+  /* This is for touch devices like smartphones*/
+  .fullscreenBtn {
+    background-color: initial;
+  }
+
+  .microphoneBtn:hover {
+    background-color: initial;
+  }
+}
+
+#commandForm {
+  display: flex;
+}
+
+/* Text Input and Send Button */
+#commandFieldContainer {
+  align-items: center;
+  /* Vertically center items */
+  z-index: 15;
+  /* This ensures the commandFieldContainer is always on top */
+  position: relative;
+  margin: 5px auto;
+  bottom: min(18px, 0.5vw);
+  background-color: transparent;
+  padding: 4px;
+  padding-left: 10px;
+  border-radius: 25px;
+}
+
+#commandFieldContainer.hidden {
+  opacity: 0;
+  transition: 500ms;
+  pointer-events: none;
+}
+
+#commandFieldContainer.shownslowly {
+  transition: opacity 3s;
+}
+
+#commandField {
+  flex: 1;
+  /* Allow the input field to grow and take up remaining space */
+  width: 140px;
+  max-width: min(40vw, 50vh);
+  padding: 10px 15px;
+  height: fit-content;
+  border-radius: 15px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.25);
+  /* Initial transparency */
+  outline: none;
+  color: rgb(103, 103, 103);
+  /* Smooth back-transition */
+  transition-delay: 500ms;
+  font-size: 12px;
+  transition: 2s;
+  /* Important because otherwise the button does not work because when you click on it the position of the button has already changed in the background */
+}
+
+#commandField::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+  /* Changes placeholder text to white */
+}
+
+#commandField.hidden {
+  width: 0px;
+  padding: 10px 0px;
+  /* Smooth back-transition */
+}
+
+.cover {
+  background-color: var(--background-color);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 16;
+  transition: opacity 200ms;
+  opacity: 0.97;
+  /* should NOT be the standard border radius because then the edges look strange */
+}
+
+.coverIframe {
+  background-color: var(--background-color);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 16;
+  transition: opacity 200ms;
+  opacity: 0.97;
+}
+
+.cover.hidden {
+  opacity: 0;
+}
+
+.cover.gone {
+  display: none;
+}
+
+.cover.fullopacity {
+  opacity: 0.94;
+  /* must be 0.99 because otherwise the video is not loaded in the background */
+}
+
+#topcover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 99.9vh;
+  /* may NOT be 100 because then the browser does not load the video because it is completely in the background! */
+  background-color: var(--background-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0.99;
+  /* ensures it's on top of other content */
+}
+
+#topcover.hidden {
+  opacity: 0;
+  transition: 1500ms;
+}
+
+#topcover.gone {
+  display: none;
+}
+
+#microphoneBtn {
+  padding-top: 3px;
+  padding: 1px;
+  background: none;
+  border: none;
+  opacity: 45%;
+  transition: 0.5s;
+  width: 38px;
+  height: 42px;
+  border-radius: 15px;
+  margin-right: 3px;
+  display: none;
+}
+
+#microphoneBtn:hover {
+  cursor: pointer;
+  background-color: rgba(200, 200, 200, 0.3);
+}
+
+#microphoneBtn.micshown {
+  opacity: 90%;
+  transition: 0.5s;
+  animation: darkenPulse 2s infinite;
+}
+
+@keyframes darkenPulse {
+  0%,
+  100% {
+    filter: brightness(70%);
+  }
+
+  10%,
+  90% {
+    filter: brightness(70%);
+  }
+
+  50% {
+    filter: brightness(90%);
+    /* Makes the icon darker */
+  }
+}
+
+#speechBubble {
+  font-family: 'Ubuntu';
+  opacity: 0;
+  width: 80%;
+  position: absolute;
+  background-color: #ffffffd3;
+  color: #333;
+  border-radius: 10px;
+  padding: 5px 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  bottom: 60px;
+  left: 0px;
+  transition: opacity 0.5s;
+}
+
+#speechBubble::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  /* Adjust to modify the size of the tail */
+  border-right: 5px solid transparent;
+  /* Adjust to modify the size of the tail */
+  border-top: 8px solid #ffffffb3;
+  /* This should be the same color as your bubble's background */
+  bottom: -8px;
+  /* Position of the tail - Adjust as required */
+  left: 35%;
+  transform: translateX(-50%);
+  /* Center the tail */
+}
+
+#speechBubble.visible {
+  opacity: 0.95;
+}
+
+.loadingbubbleinchathistory {
+  width: min(70%, 130px);
+  height: 11px;
+  min-height: 11px;
+  /*must be set additionally because after some chat messages the outer div is not big enough to carry all chat messages and then the browser otherwise decreases this height*/
+  overflow: hidden;
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+.bubbleinchathistory {
+  position: relative;
+  font-family: 'Ubuntu';
+  border-radius: 15px;
+  padding: 4px;
+  border: 1px solid #eee;
+  color: white;
+  font-size: max(min(1.6vw, 14px, 1.6vh), 11px);
+  transition: opacity 0.5s;
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-shadow: -2px -2px 2px #00000025, 2px -2px 2px #00000025,
+    -2px 2px 2px #00000025, 2px 2px 2px #00000025;
+  box-shadow: 2px 2px 2px #00000044;
+  transition: color 2s, border-color 2s, text-shadow 2s;
+}
+
+.bubbleinchathistory.old {
+  border: 1px solid #bbb;
+  color: #ddd;
+  text-shadow: -2px -2px 2px #00000020, 2px -2px 2px #00000020,
+    -2px 2px 2px #00000020, 2px 2px 2px #00000020;
+}
+
+.shortAnim {
+  animation: bounce 2s;
+}
+
+.loadingbubbleinchathistory::after {
+  content: '';
+  display: block;
+  position: absolute;
+  left: -150%;
+  top: 0;
+  height: 100%;
+  width: 150%;
+  /* Adjust width for animation spread */
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: loading 2500ms infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -150%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.charMessage {
+  align-self: flex-start;
+}
+
+.userMessage {
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+#sayingofaibubble {
+  font-family: 'Ubuntu';
+  opacity: 0;
+  position: absolute;
+  background-color: white;
+  color: #3793a2;
+  border-radius: 40px;
+  padding: 5px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: min(2.7vw, 15px);
+  line-height: min(3.2vw, 18px);
+  left: 52%;
+  transform: translateX(-50%);
+  bottom: max(min(90px, 8vw), 70px);
+  width: 60%;
+  /*max-width: 400px; do not set it here because this will be set in js*/
+  transition: opacity 0.5s;
+  text-align: center;
+  z-index: 203;
+}
+
+@media (max-width: 520px) {
+  #sayingofaibubble {
+    transform: translateY(50%);
+    bottom: 60%;
+    width: 25%;
+    right: 10px;
+    left: unset;
+  }
+}
+
+#sayingofaibubble.visible {
+  opacity: 0.82;
+}
+
+#sayingofaibubble::before {
+  display: none;
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  /* Adjust to modify the size of the tail */
+  border-right: 5px solid transparent;
+  /* Adjust to modify the size of the tail */
+  border-bottom: 8px solid #36820d;
+  /* This should be the same color as your bubble's background */
+  top: -8px;
+  /* Position of the tail - Adjust as required */
+  left: 25%;
+  transform: translateX(-50%);
+  /* Center the tail */
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-10px);
+  }
+
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes flyIn {
+  0% {
+    transform: translateX(var(--video-width)) translateY(var(--video-height));
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0.9;
+  }
+}
+
+.bubble.bouncing {
+  animation: bounce 2s;
+}
+
+#commandField:focus {
+  background-color: rgba(240, 240, 240, 0.8);
+  /* Decrease transparency when focused */
+  width: min(350px, calc(70vw - 50px));
+  /*do NOT set max-width here because then the buttons in bottom right of the steering elements are pushed outside on a small screen*/
+  transition: 400ms;
+  /* Smooth transition */
+}
+
+#sendButtonContainer {
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+#sendButton {
+  background-color: transparent;
+  border: none;
+  font-size: 28px;
+  /* Adjust size as per your preference */
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s;
+  /* Smooth transition */
+  transition-delay: 500ms;
+  margin-left: 5px;
+  padding: 0 5px;
+}
+
+#sendButton.hidden {
+  opacity: 0;
+  transition: 500ms;
+  /* Smooth back-transition */
+}
+
+#sendButton:active {
+  transform: scale(0.6);
+  color: green;
+}
+
+#sendButton:hover {
+  color: #ddd;
+  /* Light gray when hovered */
+  cursor: pointer;
+}
+
+#testButton {
+  background-color: transparent;
+  position: relative;
+  font-size: 9px;
+  color: var(--text-color-light);
+  z-index: 999;
+  text-align: left;
+  border: none;
+  outline: none;
+}
+
+#dynamicText {
+  z-index: 14;
+  color: blue;
+  font-size: 11px;
+  top: 25px;
+  left: 5px;
+  position: fixed;
+}
+
+/* Loading Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-animation {
+  border: 10px solid rgba(211, 211, 211, 0.5);
+  border-top: 10px solid rgba(150, 150, 150, 0.5);
+  border-radius: 50%;
+  width: 0px;
+  margin-top: 6px;
+  height: 0px;
+  margin-left: 9px;
+  animation: spin 2s linear infinite;
+}
+
+.loading-animation-over-player {
+  position: absolute;
+  border: 15px solid rgba(211, 211, 211, 0.5);
+  border-top: 15px solid rgb(114 114 114);
+  border-radius: 50%;
+  width: 0px;
+  top: calc(50% - 20px);
+  left: calc(50% - 20px);
+  animation: spin 2s linear infinite;
+  z-index: 23;
+}
+
+.pulsating-dot {
+  position: absolute;
+  top: calc(50% - 20px);
+  left: calc(50% - 20px);
+  z-index: 23;
+  width: 40px;
+  height: 40px;
+  background-color: grey;
+  border-radius: 50%;
+  animation: pulsate 2s infinite;
+}
+
+.pulsating-dot-inline {
+  width: 40px;
+  height: 40px;
+  margin: 50px auto;
+  background-color: grey;
+  border-radius: 50%;
+  animation: pulsate 2s infinite;
+}
+
+@keyframes pulsate {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.footer {
+  position: fixed;
+  display: flex;
+  justify-content: flex-end;
+  width: calc(100% - 2 * 7px);
+  padding: 7px;
+  right: 0;
+  bottom: 0;
+  z-index: 300;
+}
+
+/* imprint Button Style */
+.buttonsRightBottom {
+  color: var(--text-color-light);
+  font-size: 11px;
+  background: none;
+  margin: 5px;
+  border: none;
+  text-align: center;
+  padding: unset;
+  text-shadow: -1px -1px 0 var(--background-color-light),
+    1px -1px 0 var(--background-color-light),
+    -1px 1px 0 var(--background-color-light),
+    1px 1px 0 var(--background-color-light);
+}
+
+.buttonsRightBottom:hover {
+  cursor: pointer;
+  text-decoration: underline;
+  /*background-color: rgba(200, 200, 200, 0.3);*/
+}
+
+/* imprint Button Style */
+.buttonsLeftBottom {
+  color: var(--text-color-light);
+  font-size: 11px;
+  background: none;
+  margin: 5px;
+  border: none;
+  text-align: center;
+  padding: unset;
+  margin-right: auto;
+  /* Pushes this item to the right */
+  text-shadow: -1px -1px 0 var(--background-color-light),
+    1px -1px 0 var(--background-color-light),
+    -1px 1px 0 var(--background-color-light),
+    1px 1px 0 var(--background-color-light);
+}
+
+#imprintPopup {
+  z-index: 301;
+}
+
+.darkmodeToggle {
+  margin: 0 7px;
+  opacity: 90%;
+  height: 20px;
+  cursor: pointer;
+}
+
+#ConsentPopup {
+  z-index: 203;
+  display: block;
+}
+
+#ConsentPopupBlur {
+  z-index: 202;
+  display: block;
+  background-color: #eee;
+  /*backdrop-filter: blur(10px); sadly does not work on safari*/
+}
+
+#ConsentPopup.hidden,
+#ConsentPopupBlur.hidden {
+  display: none;
+}
+
+#ConsentPopupContent {
+  text-align: center;
+  margin-top: 20vh;
+  display: block;
+  background-color: white;
+  color: black;
+  border: 1px solid #777;
+}
+
+#audioPopup {
+  z-index: 201;
+  display: block;
+}
+
+#audioPopup.hidden {
+  display: none;
+}
+
+.audioButtons {
+  font-size: 17px;
+  white-space: normal;
+  border-radius: 35px;
+  height: 68px;
+  font-family: inherit;
+  background: var(--markup-color);
+  border: 1px solid white;
+  width: 100%;
+  margin-bottom: 4px;
+  color: #eee;
+}
+
+.audioButtons:hover,
+.audioButtons:focus {
+  background: rgb(29, 78, 0);
+  border: 1px solid #ddd;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.boxAroundAudioButtons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 12px;
+  margin-top: 17px;
+  width: 43%;
+  min-width: 200px;
+}
+
+.floatInRow {
+  display: flex;
+  align-items: center;
+  margin: 7px 0;
+}
+
+.twoItemsInFloatInRow {
+  flex: 50%;
+  padding: 0 1%;
+  box-sizing: border-box;
+  width: 50%;
+}
+
+.audiopopup-content {
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  width: 500px;
+  max-width: 80%;
+  margin: 15vh auto;
+  background-color: #3b3b3b;
+  border: 1px solid #d7d7d7;
+  border-radius: 35px;
+  box-shadow: 2px 2px rgba(200, 200, 200, 0.5);
+}
+
+.smallTextInAudioButton {
+  font-size: 12px;
+  margin: unset;
+  width: 80%;
+}
+
+.popup {
+  top: 0px;
+  z-index: 303;
+  /* Hidden by default */
+  position: fixed;
+  /* Above the button */
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* Enable scroll if needed */
+  background-color: var(--text-color-light);
+  /* Dimmed background */
+}
+
+.confirmation {
+  top: 0px;
+  z-index: 303;
+  display: none;
+  /* Hidden by default */
+  position: fixed;
+  /* Above the button */
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.4);
+  /* Dimmed background */
+}
+
+.popup-content {
+  color: var(--text-color);
+  z-index: 310;
+  background-color: var(--background-color);
+  margin: auto;
+  margin-top: 90px;
+  padding: 25px;
+  border: 1px solid var(--text-color);
+  width: fit-content;
+  max-width: min(95%, 520px);
+  border-radius: 15px;
+  box-sizing: border-box;
+  animation-name: fadeIn;
+  animation-duration: 500ms;
+  min-width: min(65vw, 350px);
+}
+
+@media (max-width: 760px) {
+  .popup-content {
+    padding: 15px;
+  }
+}
+
+.stripe {
+  background-color: white;
+  color: black;
+}
+
+.policyPopup {
+  z-index: 304;
+  position: fixed;
+  top: 0px;
+  color: white;
+  margin: 15px;
+  padding: 10px;
+  width: calc(100% - 25px);
+  height: calc(100% - 50px);
+  border: solid white 1px;
+  border-radius: 5px;
+  background-color: #333333;
+  overflow: auto;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .policyPopup {
+    width: calc(100% - 10px);
+    height: calc(100% - 20px);
+    margin: 5px;
+    padding: 5px;
+  }
+}
+
+.policyPopup-content {
+  background-color: #3b3b3b;
+  margin-top: 10px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #d7d7d7;
+  width: 80%;
+  /* You might want to adjust this */
+  max-width: 400px;
+  /* Maximum width */
+  border-radius: 15px;
+  /* Rounded corners */
+
+  box-shadow: 3px 3px rgba(200, 200, 200, 0.2);
+}
+
+.close {
+  position: relative;
+  right: 0px;
+  top: -7px;
+  font-size: 30px;
+  margin: unset;
+  float: right;
+  z-index: 399;
+}
+
+.placeholderClose {
+  position: relative;
+  left: 0px;
+  float: left;
+  opacity: 0;
+  top: -7px;
+  font-size: 30px;
+  margin: unset;
+  z-index: 399;
+}
+
+.close:hover,
+.close:focus {
+  opacity: 0.8;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.closepolicy {
+  position: fixed;
+  right: 40px;
+  top: 25px;
+  font-size: 30px;
+  z-index: 399;
+}
+
+.closepolicy:hover,
+.closepolicy:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 15px;
+  height: 15px;
+  padding: 10px;
+  margin: 0 5px;
+  display: inline-block;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #eee;
+}
+
+.checkboxdiv {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 12px 20px;
+}
+
+.checkboxdiv label {
+  text-align: left;
+  margin-left: 5px;
+}
+
+/* Form styling */
+#contact-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputDiv {
+  display: flex;
+  text-align: right;
+  margin: 10px auto;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+.labelForInput {
+  width: 20%;
+  font-size: 13px;
+  margin: auto 10px;
+  margin-right: 2px;
+  box-sizing: border-box;
+}
+
+.formLabel {
+  margin-top: 7px;
+}
+
+.uploadcare--widget__button_type_open {
+  background-color: rgb(255, 255, 255);
+  color: var(--markup-color);
+  cursor: pointer;
+  height: 40px;
+  border-radius: 15px;
+  margin: 10px;
+  margin-bottom: 0px;
+  width: 130px;
+}
+
+.uploadcare--widget {
+  display: inline-block;
+  vertical-align: baseline;
+  margin: auto;
+}
+
+.contactFormInput {
+  padding: 8px;
+  margin: 0 auto;
+  width: 70%;
+  display: inline-block;
+  border: none;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #eee;
+}
+
+#contact-form button:hover {
+  background-color: rgba(120, 122, 120, 0.969);
+}
+
+#passwordbox {
+  margin-bottom: 15px;
+  padding: 11px 18px;
+  border-radius: 99px;
+  width: 50%;
+  border: 1px solid black;
+}
+
+#consentFormButton:hover {
+  background-color: rgba(120, 122, 120, 0.969);
+}
+
+/*
+#paymentPopup{
+    text-align: center;
+    z-index: 301;
+    display: none;
+    position: relative;
+    margin: auto;
+    padding: 10px;
+    width: 95%;
+    max-width: 400px; 
+    border: solid white 1px;
+    border-radius: 15px;
+    background-color: #333333;
+    
+    overflow: auto;
+}
+
+#chooseCredits{
+    width: 95%;
+    margin: auto;
+    margin: 20px 0;
+}*/
+
+#creditImage {
+  margin: auto;
+  width: 40vw;
+  height: 40vw;
+  border-radius: 50%;
+}
+
+.smallButton {
+  height: 30px;
+  border-radius: 15px;
+  margin: 2px;
+  width: 70px;
+  color: #333;
+  font-size: 15px;
+  background: #aaaaaab5;
+  border: unset;
+  cursor: pointer;
+}
+
+.smallButtonWithoutBackground {
+  color: var(--text-color-light);
+  font-size: 14px;
+  text-decoration: underline;
+  background: unset;
+  border: unset;
+  cursor: pointer;
+}
+
+.smallButtonWithoutBackground:hover {
+  opacity: 0.8;
+}
+
+.showNotificationHowToSubsc {
+  color: var(--markup-color-bright);
+  background: unset;
+  border: unset;
+  cursor: pointer;
+}
+
+.bigButton {
+  display: block;
+  border-radius: 15px;
+  margin: 12px auto;
+  width: 140px;
+  max-width: 85%;
+  font-weight: bold;
+  color: white;
+  font-size: 15px;
+  background: var(--markup-color);
+  border: 1px solid white;
+  cursor: pointer;
+  padding: 7px 12px;
+}
+
+@media (max-width: 760px) {
+  .bigButton {
+    font-size: 13px;
+  }
+}
+
+.bigButton:hover {
+  opacity: 0.8;
+}
+
+.bigButton:active {
+  opacity: 0.8;
+}
+
+.superBigButton {
+  display: block;
+  border-radius: 15px;
+  margin: 12px auto;
+  width: 130px;
+  max-width: 85%;
+  color: white;
+  font-size: 16px;
+  background: var(--markup-color);
+  border: 1px solid white;
+  cursor: pointer;
+  padding: 10px;
+}
+
+@media (max-width: 760px) {
+  .superBigButton {
+    font-size: 13px;
+  }
+}
+
+.superBigButton:hover {
+  background: var(--markup-color-transparent);
+}
+
+.superBigButton:active {
+  background: var(--markup-color-transparent);
+}
+
+.textButton {
+  background: transparent;
+  border: none;
+  color: var(--text-color-light);
+  width: 100%;
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.labelForBigButton {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.box {
+  height: 45px;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  line-height: 40px;
+  font-size: 14px;
+  color: #eaeaea;
+  cursor: pointer;
+}
+
+.box input[type='radio'] {
+  display: none;
+  /* Hide the radio button */
+}
+
+.showMailAdress {
+  display: inline-block;
+  background-color: #999999;
+  color: #2d2d2d;
+  border: none;
+  border-radius: 7px;
+  padding: 10px;
+}
+
+a {
+  color: inherit;
+  /* do NOT use var(--text-color) because then in e.g. terms where background is dark the link is hardly readable */
+  text-decoration: underline;
+}
+
+.box input[type='radio']:checked + label {
+  background-color: #2c2c2c;
+}
+
+.pricetag {
+  margin-top: 2px;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.normalInput {
+  width: min(250px, 65vw);
+  border-radius: 15px;
+  padding: 10px 12px;
+  margin: 5px 15px;
+}
+
+.normalInput::placeholder {
+  color: #111111cc;
+}
+
+.boxaroundbox {
+  display: block;
+  margin: 5px 0;
+  width: calc(50% - 2px);
+  text-align: center;
+  padding-top: 10px;
+}
+
+.creditpic {
+  display: flex;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin: auto;
+  margin-bottom: 20px;
+  margin-top: 5px;
+  border: 2px solid var(--text-color-light);
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  width: 40px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 8px solid;
+  border-color: #ffffff #dfdfdf00;
+  animation: l1 1s infinite;
+  margin: 30px;
+}
+
+@keyframes l1 {
+  to {
+    transform: rotate(0.5turn);
+  }
+}
+
+.notification {
+  position: fixed;
+  z-index: 403;
+  top: -200px;
+  font-size: 15.5px;
+  width: calc(60vw - 30px);
+  max-width: 800px;
+  margin: 0 auto;
+  border: none;
+  border-radius: 15px;
+  background-color: #2e7e00;
+  text-align: center;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: top 0.5s ease;
+  left: 0;
+  right: 0;
+}
+
+.notification.show {
+  top: 20px;
+  /* Slide down */
+}
+
+@media (max-width: 580px) {
+  .notification {
+    font-size: 14.5px;
+    width: calc(100% - 40px);
+    margin: 0 0 0 10px;
+    padding: 8px;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    top: -200px;
+  }
+
+  to {
+    top: 10px;
+    /*not too high because then overlaps with popup*/
+  }
+}
+
+@keyframes slideOut {
+  from {
+    top: 20px;
+  }
+
+  to {
+    top: -220px;
+  }
+}
+
+.notificationButton {
+  display: block;
+  height: 35px;
+  width: 40%;
+  max-width: 150px;
+  margin: auto;
+  margin-top: 10px;
+  border-radius: 15px;
+  border: unset;
+  background-color: #2e7e00;
+  color: white;
+  cursor: pointer;
+}
+
+.notificationButton:hover {
+  background-color: #1f5400;
+}
+
+#usermenuMainButton {
+  z-index: 110;
+  position: relative;
+  cursor: pointer;
+}
+
+#userIcon {
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+#userSettingsContent {
+  border-top: 1px solid var(--text-color);
+  margin-top: 60px;
+}
+
+.settingsDiv {
+  margin: 8px auto 0 10px;
+  font-size: 13px;
+}
+
+.flag {
+  padding: 1px;
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+.userLetterCircle {
+  width: 27px;
+  height: 27px;
+  background-color: var(--markup-color);
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  color: #eee;
+  font-size: 13px;
+  display: flex;
+}
+
+.userLetterCircle.nouser {
+  background-color: #565656;
+  border: 1px solid #888;
+  font-size: 10px;
+}
+
+.green-hook-list {
+  list-style: none;
+  /* Remove default list bullets */
+  text-align: left;
+  margin-top: 5px;
+  padding: 0;
+}
+
+.green-hook-list li {
+  position: relative;
+  /* Needed to position the ::before pseudo-element */
+  padding-left: 20px;
+  /* Space for the hook */
+  padding-bottom: 5px;
+}
+
+.smallpadding {
+  padding: 15px;
+}
+
+@media (max-width: 760px) {
+  .smallpadding {
+    padding: 5px;
+  }
+}
+
+.green-hook-list li::before {
+  content: '\2713';
+  /* Unicode for check mark */
+  color: green;
+  /* Green color for the hook */
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 16px;
+  /* Adjust size as needed */
+  line-height: 1;
+  /* Adjust line height if necessary */
+}
+
+#userMenu {
+  display: grid;
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  border-radius: 8px;
+  background: #3b3b3b;
+  padding: 3px;
+  width: fit-content;
+}
+
+.userMenuButton {
+  width: 130px;
+  margin: 5px;
+  font-weight: bold;
+  /* background-color: #2e7e00; */
+  background: transparent;
+  border: 1px solid white;
+  border-radius: 8px;
+  color: white;
+  padding: 10px;
+  min-width: 80px;
+  cursor: pointer;
+}
+
+.userMenuButton:hover {
+  background-color: #dddddd55;
+}
+
+@media (max-width: 580px) {
+  .roundButton {
+    font-size: 12px;
+  }
+}
+
+#googleLoginButton:hover {
+  filter: brightness(120%);
+  cursor: pointer;
+}
+
+#supporter {
+  z-index: 100;
+  position: fixed;
+  bottom: 35px;
+  right: 10px;
+  color: #ffffff;
+  font-size: 15px;
+  background: none;
+  border: none;
+  text-align: center;
+}
+
+.subscriptionItem {
+  font-size: 16px;
+  margin: auto 0;
+  padding: 2%;
+}
+
+.subscriptionItemThick {
+  width: 34%;
+}
+
+.subscriptionItemThin {
+  width: 19%;
+}
+
+.subscriptionItemDiv {
+  display: flex;
+  vertical-align: middle;
+  padding-top: 8px;
+  margin-top: 7px;
+  border-top: 1px solid #666;
+}
+
+.subscriptionItemDivTitle {
+  border: unset;
+  display: flex;
+  vertical-align: middle;
+}
+
+.availableAIDiv {
+  vertical-align: middle;
+}
+
+.modal {
+  z-index: 205;
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  height: 80%;
+  margin-top: 10%;
+  max-width: 100%;
+}
+
+.modal-content,
+#caption {
+  animation-name: zoom;
+  animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.modal_close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.modal_close:hover,
+.modal_close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.charImage {
+  width: 100%;
+  object-fit: contain;
+  /*border: 1px solid var(--text-color-light)*/
+}
+
+.charImageDiv {
+  position: relative;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.chatBubble {
+  position: absolute;
+  right: min(2vw, 15px, 2vh);
+  top: min(1.5vw, 12px, 1.5vh);
+  font-size: max(min(3.5vw, 18px, 3vh), 7px);
+  padding: 9px 9px 10px 10px;
+  color: white;
+  border-radius: 50%;
+  background: var(--markup-color-brighter);
+  opacity: 0.9;
+}
+
+@media (min-width: 760px) and (max-width: 1000px) {
+  .charBox .chatBubble {
+    right: 3px;
+    top: 3px;
+    font-size: 12px;
+  }
+}
+
+.hoverImageDiv {
+  position: relative;
+  width: 100%;
+  /* The container will flexibly resize */
+  overflow: hidden;
+  padding-top: 75%;
+}
+
+.default-image,
+.hover-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.8s ease;
+}
+
+.hover-image {
+  opacity: 0;
+}
+
+.charImageDiv:hover .hover-image,
+.charImageDiv.hovered .hover-image {
+  opacity: 1;
+}
+
+.charImageDiv:hover .default-image,
+.charImageDiv.hovered .default-image {
+  opacity: 0;
+}
+
+.charDiv {
+  color: black;
+}
+
+.charName {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 10px 13px;
+  text-align: left;
+  color: white;
+  pointer-events: none;
+  /* this is necessary because otherwise the description text under the image is shown with some padding inbetween */
+  font-family: 'Ubuntu';
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.1) 30%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+@media (min-width: 760px) and (max-width: 1000px) {
+  .charBox .charName {
+    padding: 5px 5px;
+  }
+}
+
+@media (max-width: 520px) {
+  /* this is the screen width where there is the menu and 2 rows. Therefore there is not much space*/
+  .charBox .charName {
+    padding: min(13px, 0.5vw, 0.5vh) min(13px, 0.5vw, 0.5vh);
+  }
+}
+
+.charBox .charNameText {
+  padding: min(11px, 2vw, 2vh) 0;
+  margin: 0;
+  margin-top: 4px;
+  max-width: 100%;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: bold;
+  letter-spacing: 0.03rem;
+}
+
+@media (max-width: 1200px) {
+  .charBox .charNameText {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 420px) {
+  .charBox .charNameText {
+    font-size: 11px;
+  }
+}
+
+.charBoxMain .charNameText {
+  font-size: 19px;
+  margin: 0;
+  margin-top: 4px;
+  max-width: 100%;
+  padding: 13px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: bold;
+  letter-spacing: 0.03rem;
+}
+
+@media (max-width: 800px) {
+  .charBoxMain .charNameText {
+    font-size: 17px;
+    padding: 8px 0;
+  }
+}
+
+@media (min-width: 520px) and (max-width: 670px) {
+  /* this is the screen width where there is the menu and 2 rows. Therefore there is not much space*/
+  .charBoxMain .charNameText {
+    font-size: 15px;
+    padding: 4px 0;
+  }
+}
+
+.charNameHuman {
+  color: white;
+}
+
+.charArrow {
+  position: relative;
+  bottom: 87px;
+  color: #ffffffcc;
+  pointer-events: none;
+  height: 0;
+  font-size: 30px;
+  text-shadow: -3px -3px 3px #00000025, 3px -3px 3px #00000025,
+    -3px 3px 3px #00000025, 3px 3px 3px #00000025;
+}
+
+.charBoxMain .charDescription {
+  padding-right: 20%;
+  font-size: 12px;
+}
+
+@media (max-width: 800px) {
+  .charBoxMain .charDescription {
+    padding-right: 0;
+  }
+}
+
+.charBox {
+  margin-bottom: 12px;
+  font-size: min(14px, 3vw, 3vh);
+  /* should be half of resolution as the image from paionv */
+}
+
+@media (max-width: 1200px) {
+  /* must match the script in script_char which sets number of charBoxes */
+  .charBox {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  /* must match the script in script_char which sets number of charBoxes */
+  .charBox {
+    padding-right: 15px;
+    width: 33%;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  /* must match the script in script_char which sets number of charBoxes */
+  .charBox {
+    width: 50%;
+  }
+}
+
+@media (max-width: 420px) {
+  /* must match the script in script_char which sets number of charBoxes */
+  .charBox {
+    padding-right: 8px;
+    font-size: 9px;
+  }
+}
+
+.charBoxMain {
+  width: 25%;
+  padding: max(min(1vw, 13px), 6px);
+  box-sizing: border-box;
+  font-size: 13px;
+  /*background: #7777775c;
+    border-radius: 11px;*/
+}
+
+@media (max-width: 1380px) {
+  /* only use 3 columns in a very small slot because its better to have 2 or 4 rows so that AV version is next to normal version */
+  .charBoxMain {
+    width: 33.3%;
+  }
+}
+
+@media (max-width: 1100px) {
+  .charBoxMain {
+    width: 50%;
+  }
+}
+
+@media (min-width: 550px) and (max-width: 670px) {
+  /* this is the screen width where there is the menu and 2 rows. Therefore there is not much space*/
+  .charBoxMain {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .charBoxMain {
+    width: 100%;
+  }
+}
+
+.charInfo {
+  position: absolute;
+  width: 180px;
+  font-size: 12px;
+  background-color: #ffffffbb;
+  color: #444;
+  padding: 5px;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.firstBlockDiv.fullscreen {
+  display: block;
+  margin-bottom: 0;
+}
+
+.firstBlockDiv {
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.boxRightOfVideo {
+  margin: 0.5vw 1vw 0 0;
+  width: min(18vw, 31vh);
+  box-sizing: border-box;
+}
+
+.boxRightOfVideo.fullscreen {
+  display: none;
+  width: unset;
+}
+
+@media (max-width: 760px) {
+  .firstBlockDiv {
+    display: block;
+  }
+
+  .boxRightOfVideo {
+    padding: 12px;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 0px;
+    margin: unset;
+    padding-right: unset;
+  }
+}
+
+.halfWidthBox {
+  width: min(77vw, calc(75vh * var(--video-ratio)));
+  box-sizing: border-box;
+  margin: 1vw;
+  margin-top: 0;
+  /*width: 50%; currently use width of video because there is nothing to show in the other half*/
+}
+
+.halfWidthBox.fullscreen {
+  display: none;
+  width: unset;
+}
+
+.halfWidthBox.hidden {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .halfWidthBox {
+    width: 100%;
+    margin: unset;
+    padding: 1%;
+    padding-top: 0;
+  }
+}
+
+.borderBox {
+  box-sizing: border-box;
+  border-radius: var(--standard-border-radius);
+  background: #72767711;
+}
+
+.halfWidthBox.fullscreen {
+  display: none;
+  width: unset;
+}
+
+#mainpageBigArea {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: row;
+}
+
+.menuLeft {
+  background-color: #00000005;
+  min-width: min(max(20%, 130px), 200px);
+  /* must match the close button! do not use width here because then video grid pushes this smaller*/
+  padding: 15px 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.menuLeft.gone {
+  display: none;
+}
+
+.menuLeftButton {
+  display: flex;
+  font-size: 13px;
+  padding: 9px 7px;
+  margin: 1px 10%;
+  align-items: center;
+  width: 80%;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--standard-border-radius);
+  color: var(--text-color);
+}
+
+@media (max-width: 760px) {
+  .menuLeftButton {
+    margin: 1px 5%;
+    width: 90%;
+    font-size: 11px;
+  }
+}
+
+.menuLeftButton i {
+  margin-right: 8px;
+  /* Adjust the value to your preference */
+}
+
+.menuLeftButton.highlighted {
+  background: var(--markup-color-transparent);
+  color: white;
+}
+
+.menuLeftButton:hover {
+  background: var(--markup-color-transparent);
+  color: white;
+  opacity: 0.9;
+}
+
+.menuLeftCloseButton {
+  border: none;
+  position: absolute;
+  width: 22px;
+  left: min(max(calc(20% - 14px), 119px), 188px);
+  height: 35px;
+  border-radius: 8px;
+  color: #333;
+  top: 45vh;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #ddd;
+}
+
+.menuLeftCloseButton:hover {
+  background-color: #ddddddaa;
+}
+
+.menuLeftCloseButton.menuGone {
+  left: -5px;
+  background-color: #aaa;
+  /*makes it more visible*/
+}
+
+.divider {
+  border-top: 1px solid #88888855;
+  margin-top: 25px;
+}
+
+.menuLeftTitle {
+  padding: 5px 10px;
+  margin: 0 10px;
+  margin-top: 10px;
+  font-weight: bold;
+  margin-left: 0px;
+  color: var(--text-color-light);
+  opacity: 0.5;
+  font-size: 12px;
+}
+
+.videoGrid {
+  background: var(--overlay-color);
+  padding: 2vw;
+  width: 100%;
+}
+
+.videoGridInner {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 1480px;
+  box-sizing: border-box;
+  padding-bottom: 40px;
+  /* to ensure that the footer (e.g. contact etc.) is not hidden by the video grid */
+}
+
+.videoGridInnerTitle {
+  margin: 5px auto 0 12px;
+}
+
+.nosearchresult {
+  text-align: center;
+  color: #888;
+  font-size: 18px;
+  margin: 10px auto;
+  margin-top: 50px;
+}
+
+.buttonWithoutStyle {
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+  outline: inherit;
+}
+
+.divWithoutStyle {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+#chatHistory {
+  display: flex;
+  flex-direction: column-reverse;
+  position: absolute;
+  z-index: 15;
+  bottom: 65px;
+  margin: unset;
+  right: max(5px, 1vw);
+  height: calc(90% - 55px);
+  width: min(35%, 250px);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 25%,
+    black 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 100%);
+}
+
+@media (max-width: 450px) {
+  #chatHistory {
+    bottom: 60px;
+  }
+}
+
+#actionHistory {
+  display: flex;
+  position: absolute;
+  flex-direction: row;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 30%,
+    black 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 100%);
+  height: calc(100% - 40px);
+  pointer-events: none;
+  left: 0;
+  bottom: 0;
+  width: 70%;
+  z-index: 15;
+  margin: unset;
+  pointer-events: none;
+}
+
+#actionHistoryInner {
+  padding-bottom: 50px;
+  width: 95px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  margin: unset;
+}
+
+@media (max-width: 450px) {
+  #actionHistoryInner {
+    padding-bottom: 40px;
+    width: 80px;
+  }
+}
+
+.bubbleinactionHistory {
+  /*EVERYTHING HERE IS BIGGER BUT THERE IS A TRANSITION TO NORMAL SIZE*/
+  position: relative;
+  font-family: 'Ubuntu';
+  font-weight: bold;
+  border-radius: 18px;
+  padding: 3px 6px;
+  background: var(--markup-color);
+  color: white;
+  font-size: max(min(2vw, 14px), 11px);
+  transition: opacity 0.5s;
+  text-align: center;
+  width: fit-content;
+  box-sizing: border-box;
+  margin-bottom: 0;
+  opacity: 0.7;
+}
+
+.bounce {
+  animation: bounce 2s 2;
+}
+
+.flyIn {
+  animation: flyIn 2s 2;
+}
+
+.subscriptionItemTitle {
+  color: var(--markup-color-high-contrast);
+  font-weight: bold;
+}
+
+#subscriptionList {
+  margin-bottom: 20px;
+}
+
+#sloganBar {
+  background-color: #6e6e6e;
+  color: #eee;
+  padding: 10px 0;
+  text-align: center;
+  font-size: min(4vw, 14px);
+}
+
+.paddingSmallerIfLowWidth {
+  padding: 10vw;
+}
+
+@media (max-width: 760px) {
+  .paddingSmallerIfLowWidth {
+    padding: 10px;
+  }
+}
+
+.loadingDots {
+  display: inline-block;
+  width: 0px;
+  font-size: 32px;
+  transition: opacity 1s;
+}
+
+.loadingDots.hidden {
+  opacity: 0;
+}
+
+.loadingDots span {
+  opacity: 0;
+  animation: blink 2.2s infinite;
+}
+
+.loadingDots span:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.loadingDots span:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  30%,
+  70% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0%;
+  }
+
+  to {
+    opacity: 100%;
+  }
+}
+
+.comment {
+  position: relative;
+  padding: 10px;
+  padding-right: 30px;
+  /*to avoid interference with return symbol*/
+  border-top: 1px solid #77777744;
+  font-size: 13px;
+  -webkit-text-size-adjust: 100%;
+}
+
+.subComment {
+  position: relative;
+  margin-left: 40px;
+  padding: 10px;
+  border-top: 1px solid #77777744;
+  font-size: 12px;
+  padding-left: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
+.commenter {
+  font-size: smaller;
+  font-family: 'Ubuntu';
+}
+
+.commentText {
+  margin-top: 2px;
+  margin-left: 9px;
+}
+
+#commentResponse {
+  margin: 5px auto;
+  background-color: transparent;
+  padding: 4px;
+  padding-left: 10px;
+  border-radius: 25px;
+  transition: 500ms;
+}
+
+#commentResponse.fullscreen {
+  display: none;
+  width: unset;
+}
+
+#commentForm {
+  display: flex;
+}
+
+#commentResponseField {
+  width: calc(100% - 38px);
+  padding: 8px 15px;
+  border-radius: 50px;
+  border: 1px solid gray;
+  background-color: transparent;
+  outline: none;
+  color: var(--text-color);
+  transition: 500ms;
+  transition-delay: 500ms;
+  font-size: 12px;
+}
+
+#commandField::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+  /* Changes placeholder text to white */
+}
+
+#sendButtonContainer {
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.commentSendButton {
+  background-color: transparent;
+  border: none;
+  font-size: 24px;
+  /* Adjust size as per your preference */
+  color: var(--text-color-light);
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s;
+  /* Smooth transition */
+  transition-delay: 500ms;
+  margin-left: 5px;
+  padding: 5px;
+}
+
+.commentSendButton.hidden {
+  opacity: 0;
+  transition: 500ms;
+  /* Smooth back-transition */
+}
+
+.commentSendButton:active {
+  transform: scale(0.6);
+  color: green;
+}
+
+.commentSendButton:hover {
+  color: #ddd;
+  /* Light gray when hovered */
+  cursor: pointer;
+}
+
+.commentReponseButton {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  color: var(--text-color-light);
+  opacity: 0.4;
+}
+
+.commentReponseButton:hover {
+  cursor: pointer;
+}
+
+.commentReponseButton.positionAboveComment {
+  bottom: 45px;
+}
+
+.commentResponseForm {
+  display: flex;
+  padding: 8px 5px;
+}
+
+.commentReponseFormsField {
+  width: calc(100% - 50px);
+  padding: 5px 15px;
+  border-radius: 50px;
+  border: 1px solid gray;
+  background-color: transparent;
+  outline: none;
+  color: var(--text-color);
+  transition: 500ms;
+  transition-delay: 500ms;
+  font-size: 11px;
+}
+
+.subCommentForm {
+  display: flex;
+  padding: 10px;
+}
+
+.avatarText {
+  position: absolute;
+  left: min(3vw, 2vh, 15px);
+  top: min(3.2vw, 2vh, 15px);
+  color: white;
+  background: var(--markup-color-brighter);
+  border-radius: 20px;
+  padding: 4px 8px;
+  font-size: max(min(3vw, 3vh, 13px), 5px);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.charBox .avatarText {
+  left: min(3vw, 3vh, 15px);
+  top: min(3vw, 3vh, 15px);
+}
+
+@media (min-width: 760px) and (max-width: 1000px) {
+  .charBox .avatarText {
+    left: 5px;
+    top: 5px;
+  }
+}
+
+#searchBar {
+  display: inherit;
+  margin: auto;
+  align-items: center;
+  width: 50%;
+  max-width: 300px;
+}
+
+#searchForm {
+  position: relative;
+  width: 100%;
+}
+
+#searchField {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 15px;
+  padding-right: 30px;
+  border-radius: 25px;
+  background-color: #7777771a;
+  color: var(--text-color);
+}
+
+#searchField:focus {
+  background-color: #77777728;
+}
+
+@media (max-width: 400px) {
+  #searchForm {
+    display: none;
+    /* Hide the search bar on small screens because not enough space*/
+  }
+}
+
+#searchButton {
+  color: #888; /*use this and not var(--text-color) because when this field is filled with drop down on chrome then the arrow would not be visible*/
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.labelling {
+  font-size: 11px;
+  padding: 1px 4px;
+  margin: 0;
+  margin-left: 5px;
+  box-sizing: border-box;
+  background-color: #b00;
+  border-radius: 5px;
+  color: white;
+}
+
+.advertisingBanner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.4);
+  background-image: linear-gradient(
+    135deg,
+    var(--markup-color2) 20%,
+    var(--markup-color2-dark) 100%
+  );
+  color: #fff;
+  cursor: pointer;
+  margin: 0 12px;
+  margin-bottom: calc(5px + 1vw);
+  overflow: hidden;
+  font-size: 16px;
+  padding: 16px 22px;
+  border-radius: var(--standard-border-radius);
+  border: none;
+  width: calc(100% - 24px);
+  box-sizing: border-box;
+  max-width: 1455px;
+}
+
+@media (max-width: 760px) {
+  .advertisingBanner {
+    font-size: 14px;
+    padding: 10px 15px;
+    /* When window is narrow, this will be a 2-liner so much less vertical padding */
+  }
+}
+
+#leaveFeedback {
+  text-align: right;
+  font-size: 11px;
+  color: var(--text-color-light);
+  margin: 1px 40px 10px 0;
+  font-style: italic;
+  cursor: pointer;
+  -webkit-text-size-adjust: 100%;
+}
+
+#leaveFeedback.fullscreen {
+  display: none;
+  width: unset;
+}
+
+.diagonal-strike {
+  position: relative;
+  display: inline-block;
+}
+
+.diagonal-strike::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -5%;
+  width: 110%;
+  height: 3px;
+  background-color: rgba(136, 0, 0, 0.798);
+  transform: rotate(-20deg);
+}
+
+.dealBox {
+  position: absolute;
+  width: 100px;
+  line-height: 15px;
+  font-size: 14px;
+  bottom: 36px;
+  left: 22px;
+  transform: translateX(-50%) rotate(-12deg);
+  border-radius: var(--standard-border-radius);
+  background-color: var(--markup-color2);
+  padding: 5px;
+  background-image: linear-gradient(
+    135deg,
+    var(--markup-color2) 20%,
+    var(--markup-color2-dark) 100%
+  );
+}
+
+/*These classes will simply be removed on the corresponding pages
+.showavame {
+    display: none;
+} */
+
+.showchar {
+  display: none;
+}
+
+i:hover {
+  opacity: 0.8;
+} /* Default Light Mode Styles */
+.popup {
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+  padding: 20px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Dark Mode Styles */
+.popup.dark-mode {
+  background: #1e1e1e;
+  color: white;
+  border-color: #444;
+}
+
+
+/* Dark Mode Styles for Consent Popup */
+@media (prefers-color-scheme: dark) {
+    #ConsentPopup {
+        background-color: rgba(20, 20, 20, 0.95) !important;
+        color: #ffffff !important;
+        border: 1px solid #444 !important;
+    }
+
+    #ConsentPopupContent {
+        color: #ffffff !important;
+    }
+
+    #ConsentPopupBlur {
+        background-color: rgba(0, 0, 0, 0.8) !important;
+    }
+
+    #ConsentPopup h2, #ConsentPopup p, #ConsentPopup button {
+        color: #ffffff !important;
+    }
+
+    #ConsentPopup button {
+        background-color: #333 !important;
+        border: 1px solid #666 !important;
+    }
+
+    #ConsentPopup button:hover {
+        background-color: #555 !important;
+    }
+
+    /* Ensure logo text is visible */
+    #ConsentPopup .logo {
+        filter: brightness(1.5);
+    }
+}
+
+.dark-mode .popup-content{
+  background-color: #252525 !important;
+  border-color: #252525 !important;
+}
+.dark-mode .popup-content label{
+  color: #fff !important;
+}
+.dark-mode .popup-content h1,a,p{
+  color: #fff !important;
+}
